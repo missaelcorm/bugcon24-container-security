@@ -78,6 +78,7 @@ services:
 ```
 
 ##### Demostración de Escape
+![alt text](image-3.png)
 ```bash
 # Desde dentro del contenedor DinD
 docker run -v /:/host -it ubuntu  # Acceso total al host
@@ -93,6 +94,7 @@ echo 1 > /tmp/cgroup/x/notify_on_release
 ```
 
 #### 4.2 Jenkins con Docker
+![alt text](image-2.png)
 ```yaml
 # ❌ Jenkins con acceso inseguro a Docker
 services:
@@ -141,6 +143,7 @@ cd /host && chroot .
 ```
 
 #### 5.3 A través del Socket de Docker
+![alt text](image.png)
 ```bash
 # Usando el socket expuesto
 docker run -v /var/run/docker.sock:/var/run/docker.sock -it ubuntu
