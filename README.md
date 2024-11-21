@@ -1,12 +1,43 @@
+---
+marp: true
+_class: invert
+---
+
 # Container Security Talk: A Beginner's Guide to Container Escapes
 
+### Repo: https://github.com/missaelcorm/bugcon24-container-security/
+---
+## Whoami
+
+### Missael Cortes
+- DevOps Engineer at FICO
+- Offensive security enthusiast
+- Previous experience:
+  - Infrastructure and DevOps Engineer at Intel
+  - Network Engineer at Assetel
+- Cybersecurity Student at ITESO Guadalajara
+
+---
+
+### Connect with me
+- LinkedIn: https://linkedin.com/in/missaelcorm
+- GitHub: https://github.com/missaelcorm
+
+---
+### Why This Talk?
+As containers become the standard for application deployment, understanding their security implications is crucial. With my experience in securing large-scale container environments, I've seen these vulnerabilities exploited in real-world scenarios. This talk will help you understand:
+- Common container security mistakes
+- Real-world exploitation scenarios
+- Practical security measures
+
+---
 ## Prerequisites
 
 ### System Requirements
 - Dockerhub account
 - Docker installed (latest version)
 - Docker basics
-
+---
 ### Software Installation
 ```bash
 # Install Docker if not already installed
@@ -21,10 +52,11 @@ sudo systemctl enable docker
 sudo usermod -aG docker $USER
 # Note: You'll need to log out and back in for this to take effect
 ```
-
+---
 ## Intro to containers
 ![alt text](image-1.png)
 
+---
 ## Linux Capabilities
 
 ### 1. What are Linux capabilities?
@@ -35,6 +67,8 @@ capsh --print
 # Ejemplo: Contenedor sin capabilities
 docker run --cap-drop=ALL nginx
 ```
+---
+
 ### 2. Critic Capabilities
 ```bash
 # Capabilities más peligrosos:
@@ -49,8 +83,9 @@ CAP_SETGID           # Cambiar GID
 CAP_MKNOD            # Crear archivos especiales
 CAP_AUDIT_WRITE      # Escribir registros de auditoría
 CAP_AUDIT_CONTROL    # Configurar auditoría
-CAP_DAC_READ_SEARCH  # DAC_READ_SEARCH allows reading files without permission
+CAP_DAC_READ_SEARCH  # Allows reading files without permission
 ```
+---
 
 ### 3. Lab: Exploring capabilities
 ```bash
@@ -66,9 +101,11 @@ docker run --cap-drop=ALL --cap-add=NET_BIND_SERVICE nginx
 
 ### 4. Docker Lab:
 
-- [security-capabilities](https://training.play-with-docker.com/security-capabilities/)
+- [security-capabilities - https://training.play-with-docker.com/security-capabilities/](https://training.play-with-docker.com/security-capabilities/)
+---
 
 ## Real-World Scenarios Where These Vulnerabilities Occur
+---
 
 ### 1. CI/CD Environments - Docker Socket Exposure
 #### Jenkins Docker Builds
@@ -84,9 +121,11 @@ services:
     ports:
       - "8080:8080"
 ```
+---
 
 ![alt text](image-2.png)
 
+---
 **Why It Happens:**
 - Jenkins needs to build Docker images
 - Jenkins runs Docker commands on the host
@@ -98,6 +137,7 @@ services:
 - Full control over host Docker daemon
 - Ability to access other containers
 
+---
 ### 2. Monitoring Solutions - Host Filesystem Access
 #### Prometheus Node Exporter
 ```yaml
@@ -110,6 +150,8 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
 ```
+---
+
 **Why It Happens:**
 - Monitoring tools need system metrics
 - Host filesystem access required for stats
@@ -119,6 +161,7 @@ services:
 - Access to host system information
 - Potential read access to sensitive files
 - System reconnaissance capabilities
+---
 
 ### 3. Development Environments - Secret Exposure
 #### Local Development Setup
@@ -132,7 +175,10 @@ services:
       - ~/.ssh:/root/.ssh:ro  # Vulnerability: SSH keys mounted
       - .:/app
 ```
+---
 ![alt text](image-3.png)
+
+---
 
 **Why It Happens:**
 - Developers need access to credentials
@@ -144,8 +190,9 @@ services:
 - SSH key compromise
 - Access to sensitive configurations
 
+---
 ## Exploitation Demonstrations
-
+---
 ### Demo 1: Docker Socket Exploitation
 
 #### Setup
@@ -167,6 +214,7 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docke
 apt-get update
 apt-get install -y docker-ce-cli
 ```
+---
 
 #### Exploitation Steps
 ```bash
@@ -188,6 +236,8 @@ cat /etc/hostname  # Host's hostname
 ps aux  # Host's processes
 ```
 
+---
+
 ### Demo 2: Host Filesystem Access
 
 #### Setup
@@ -202,6 +252,7 @@ docker run -it --rm \
   -v ~/host-files:/data \
   ubuntu:latest
 ```
+---
 
 #### Exploitation Steps
 ```bash
@@ -217,6 +268,7 @@ echo "Compromised" > /data/sensitive.txt
 exit
 cat ~/host-files/sensitive.txt
 ```
+---
 
 ### Demo 3: Reading Host Secrets
 
@@ -234,6 +286,7 @@ apt-get install -y \
   make \
   vim
 ```
+---
 
 #### Create Exploit Code
 ```bash
@@ -295,6 +348,7 @@ EOF
 # Compile the exploit
 gcc -o shocker shocker.c
 ```
+---
 
 #### Exploitation Steps
 ```bash
@@ -307,8 +361,9 @@ cat container_passwd
 cat container_shadow
 ```
 
+---
 ## Best Practices Section
-
+---
 ### Security Checklist
 1. Container Configuration
 ```bash
@@ -324,6 +379,7 @@ docker run -it --rm -v ~/data:/data:ro ubuntu:latest
 # Bad: Writable mount of sensitive directory
 docker run -it --rm -v /:/host ubuntu:latest
 ```
+---
 
 ### Risk Mitigation Strategies
 1. For CI/CD Environments:
@@ -340,7 +396,7 @@ docker run -it --rm -v /:/host ubuntu:latest
    - Use development-specific credentials
    - Implement secrets management systems
    - Use environment variables instead of mounted files
-
+---
 
 ## Additional Resources
 - Docker Security: https://docs.docker.com/engine/security/
@@ -359,3 +415,5 @@ rm -rf ~/host-files
 # Reset Docker socket permissions if changed
 sudo chmod 660 /var/run/docker.sock
 ```
+---
+## Thanks
